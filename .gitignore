@@ -14,10 +14,12 @@ env/
 .env
 .env.*
 *.log
+*.pid
 build/
 dist/
 *.egg-info/
 open_pi_mem_cache/
 outputs/
 checkpoints/
+# Raw local source assets stay untracked. Viewer-ready reports under data/eval_results/ are intentionally versioned.
 data/rmbench_local/

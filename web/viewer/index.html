@@ -1,31 +1,39 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Open PI MEM Test Viewer</title>
+  <title>open-pi-mem Viewer</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar card">
       <div>
-        <h1>High-Level Test Viewer</h1>
-        <p>可视化查看每一帧的输入图像、完整 prompt、输入 memory，以及模型输出的 next subtask / next memory。</p>
+        <h1>High-Level Report Viewer</h1>
+        <p>Browse step-level Gemini planning reports, inspect prompt and memory updates, and replay the input frame strip directly from a static GitHub Pages site.</p>
       </div>
       <div class="actions">
         <label class="file-button">
-          导入报告 JSON
+          Import report JSON
           <input id="report-file" type="file" accept=".json" />
         </label>
-        <button id="load-query-btn" class="secondary">从 URL 加载</button>
+        <input
+          id="report-url"
+          class="url-input"
+          type="text"
+          placeholder="reports/Gemini_3_1_Pro/press_button/report.json or full URL"
+        />
+        <button id="load-report-btn">Load report</button>
+        <button id="load-sample-btn" class="secondary">Load bundled sample</button>
       </div>
+      <div id="load-status" class="status-banner" data-tone="info">Loading available demos ...</div>
     </header>
 
     <section class="summary-grid">
       <div class="card">
         <div class="label">Goal</div>
-        <div id="goal" class="value multiline">未加载</div>
+        <div id="goal" class="value multiline">Not loaded yet</div>
       </div>
       <div class="card">
         <div class="label">Model</div>
@@ -42,9 +50,15 @@
     </section>
 
     <main class="main-grid">
-      <aside class="card frame-list-panel">
-        <div class="panel-title">Frames</div>
-        <div id="frame-list" class="frame-list empty-state">先导入一个报告。</div>
+      <aside class="frame-list-panel">
+        <section class="card demo-panel">
+          <div class="panel-title">Bundled Demos</div>
+          <div id="demo-list" class="demo-list empty-state">Looking for bundled reports ...</div>
+        </section>
+        <section class="card">
+          <div class="panel-title">Frames</div>
+          <div id="frame-list" class="frame-list empty-state">Load a report to inspect frame-level records.</div>
+        </section>
       </aside>
 
       <section class="card viewer-panel">
@@ -54,19 +68,19 @@
             <div id="frame-meta" class="muted">-</div>
           </div>
           <div class="nav-buttons">
-            <button id="prev-btn" class="secondary">上一帧</button>
-            <button id="next-btn" class="secondary">下一帧</button>
+            <button id="prev-btn" class="secondary">Previous</button>
+            <button id="next-btn" class="secondary">Next</button>
           </div>
         </div>
 
         <div class="video-card">
           <img id="clip-preview" alt="input clip preview" />
-          <div id="video-meta" class="video-meta muted">当前 step 的输入帧动图预览。</div>
+          <div id="video-meta" class="video-meta muted">Input clip preview for the active planning step.</div>
         </div>
 
         <div class="input-strip-card">
           <div class="label">Input Frames For This Step</div>
-          <div id="input-frame-strip" class="input-frame-strip empty-state">当前记录没有多帧输入。</div>
+          <div id="input-frame-strip" class="input-frame-strip empty-state">This record does not contain multi-frame input.</div>
         </div>
 
         <div class="detail-grid">

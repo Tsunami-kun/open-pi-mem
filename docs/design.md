@@ -1,5 +1,12 @@
 # Design Notes
 
+## Primary References
+
+This repository is primarily informed by:
+
+- Torne et al., [MEM: Multi-Scale Embodied Memory for Vision Language Action Models](https://www.pi.website/download/Mem.pdf)
+- Physical Intelligence, [VLAs with Long and Short-Term Memory](https://www.pi.website/research/memory)
+
 This scaffold makes explicit choices where the MEM paper is underspecified.
 
 ## Parameter Sharing
