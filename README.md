@@ -4,6 +4,11 @@ Open research scaffold for reproducing a MEM-style hierarchical robot policy wit
 
 > Status: research codebase / work in progress. The strongest part of the repository today is the high-level memory-planning loop and the viewer-ready Gemini reports. The full end-to-end low-level benchmark story is still incomplete.
 
+## Live Demo
+
+- GitHub Pages viewer: [wingagi.github.io/open-pi-mem](https://wingagi.github.io/open-pi-mem/)
+- If the link is not live yet, enable Pages with `GitHub Actions` in the repository settings and wait for [`.github/workflows/pages.yml`](.github/workflows/pages.yml) to deploy.
+
 ## What This Repository Is
 
 `open-pi-mem` is an open attempt to make the core MEM idea concrete and inspectable:
