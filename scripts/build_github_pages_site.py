@@ -7,11 +7,11 @@ from pathlib import Path
 from typing import Any
 
 CURATED_REPORTS = [
-    "Gemini_3_1_Pro/observe_and_pickup/report.json",
     "Gemini_3_1_Pro/press_button/report.json",
+    "Gemini_3_1_Pro/observe_and_pickup/report.json",
     "Gemini_3_1_Pro/put_back_block/report.json",
-    "Gemini_Robotics_ER_1_5/observe_and_pickup/report.json",
     "Gemini_Robotics_ER_1_5/press_button/report.json",
+    "Gemini_Robotics_ER_1_5/observe_and_pickup/report.json",
     "Gemini_Robotics_ER_1_5/put_back_block/report.json",
 ]
 
