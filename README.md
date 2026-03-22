@@ -4,20 +4,7 @@ Open research scaffold for reproducing a MEM-style hierarchical robot policy wit
 
 > Status: research codebase / work in progress. The strongest part of the repository today is the high-level memory-planning loop and the viewer-ready Gemini reports. The full end-to-end low-level benchmark story is still incomplete.
 
-## Live Demo
-
-- GitHub Pages viewer: [wingagi.github.io/open-pi-mem](https://wingagi.github.io/open-pi-mem/)
-- If the link is not live yet, enable Pages with `GitHub Actions` in the repository settings and wait for [`.github/workflows/pages.yml`](.github/workflows/pages.yml) to deploy.
-
-## What This Repository Is
-
-`open-pi-mem` is an open attempt to make the core MEM idea concrete and inspectable:
-
-- a high-level planner updates memory over time
-- a low-level policy consumes visual context, language, and optionally memory-conditioned subtasks
-- evaluation artifacts are saved in a format that can be reviewed step by step
-
-Current focus areas:
+`open-pi-mem` focuses on:
 
 - single-frame high-level planning: `goal + image + prev_memory -> next_subtask + next_memory`
 - RMBench video-based high-level evaluation with Gemini models
@@ -25,6 +12,10 @@ Current focus areas:
 - minimal training and data scaffolding for open-data experiments
 
 This is an open research scaffold, not an official release from Physical Intelligence. The design choices here are intentionally explicit where the paper is underspecified. See [`docs/design.md`](docs/design.md).
+
+## Live Demo
+
+- GitHub Pages viewer: [wingagi.github.io/open-pi-mem](https://wingagi.github.io/open-pi-mem/)
 
 ## Current Status
 
@@ -128,13 +119,6 @@ open-pi-mem/
 ├── src/open_pi_mem/         # Library code
 └── web/                     # Static viewer frontend
 ```
-
-## Known Limitations
-
-- The repository currently emphasizes qualitative inspection more than headline benchmark numbers.
-- The low-level evaluation path is still a scaffold.
-- No pretrained checkpoints are released yet.
-- Saved qualitative reports are stronger than the current quantitative evaluation story.
 
 ## License
 
