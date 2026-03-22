@@ -122,8 +122,14 @@ python3 scripts/build_github_pages_site.py --output dist/github_pages
 This stages:
 
 - the viewer app at the site root
-- bundled demo reports under `reports/`
+- a curated subset of bundled demo reports under `reports/`
 - a generated `reports/index.json` manifest for the demo picker
+
+If you explicitly want the full archive in the static bundle:
+
+```bash
+python3 scripts/build_github_pages_site.py --output dist/github_pages --include-all-reports
+```
 
 GitHub Pages deployment workflow:
 

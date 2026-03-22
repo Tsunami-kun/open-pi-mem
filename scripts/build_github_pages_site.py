@@ -6,6 +6,15 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+CURATED_REPORTS = [
+    "Gemini_3_1_Pro/observe_and_pickup/report.json",
+    "Gemini_3_1_Pro/press_button/report.json",
+    "Gemini_3_1_Pro/put_back_block/report.json",
+    "Gemini_Robotics_ER_1_5/observe_and_pickup/report.json",
+    "Gemini_Robotics_ER_1_5/press_button/report.json",
+    "Gemini_Robotics_ER_1_5/put_back_block/report.json",
+]
+
 
 def _copy_tree(src: Path, dst: Path) -> None:
     if dst.exists():
@@ -47,12 +56,28 @@ def _copy_report_bundle(report_path: Path, reports_root: Path, output_reports_ro
         _copy_tree(preview_src, target_task_dir / "preview_frames")
 
 
+def _resolve_report_paths(reports_root: Path, include_all: bool) -> list[Path]:
+    if include_all:
+        return sorted(reports_root.glob("*/*/report.json"))
+    paths = [reports_root / rel_path for rel_path in CURATED_REPORTS]
+    missing = [path for path in paths if not path.exists()]
+    if missing:
+        missing_text = ", ".join(str(path.relative_to(reports_root)) for path in missing)
+        raise FileNotFoundError(f"Curated report list references missing files: {missing_text}")
+    return paths
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a static GitHub Pages site for the open-pi-mem viewer.")
     parser.add_argument(
         "--output",
         default="dist/github_pages",
         help="Output directory for the staged static site.",
+    )
+    parser.add_argument(
+        "--include-all-reports",
+        action="store_true",
+        help="Bundle every report under data/eval_results instead of the curated Pages demo set.",
     )
     args = parser.parse_args()
 
@@ -74,8 +99,9 @@ def main() -> None:
         else:
             shutil.copy2(item, destination)
 
+    report_paths = _resolve_report_paths(reports_root, include_all=args.include_all_reports)
     manifest: list[dict[str, Any]] = []
-    for report_path in sorted(reports_root.glob("*/*/report.json")):
+    for report_path in report_paths:
         report = _read_report(report_path)
         _copy_report_bundle(report_path, reports_root, output_reports_root)
         manifest.append(_build_manifest_entry(report_path, report, reports_root))
@@ -86,6 +112,8 @@ def main() -> None:
     (output_root / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Built GitHub Pages site at {output_root}")
     print(f"Bundled {len(manifest)} report(s)")
+    if not args.include_all_reports:
+        print("Used curated demo subset for GitHub Pages.")
 
 
 if __name__ == "__main__":

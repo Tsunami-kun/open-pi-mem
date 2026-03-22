@@ -96,6 +96,8 @@ These saved reports make it easy to inspect:
 - where models advance too early or remain conservative
 - how two Gemini variants behave on the same task family
 
+The GitHub Pages deployment publishes a curated subset of demos for size and reliability; the full report archive remains available in the repository.
+
 ## Documentation
 
 - [Getting Started](docs/getting_started.md)
