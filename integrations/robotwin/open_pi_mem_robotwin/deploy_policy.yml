@@ -1,0 +1,17 @@
+# Task-related arguments
+policy_name: open_pi_mem_robotwin
+task_name: null
+task_config: null
+ckpt_setting: null
+seed: null
+instruction_type: unseen
+
+# open-pi-mem checkpoint/inference arguments
+checkpoint_path: null
+device: cuda
+action_scale: 1.0
+action_clip_min: -1.0
+action_clip_max: 1.0
+disable_action_clip: false
+max_action_steps: null
+memory_enabled: false

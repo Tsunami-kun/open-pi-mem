@@ -8,6 +8,7 @@ Open research scaffold for reproducing a MEM-style hierarchical robot policy wit
 
 - single-frame high-level planning: `goal + image + prev_memory -> next_subtask + next_memory`
 - RMBench video-based high-level evaluation with Gemini models
+- RoboTwin policy-wrapper integration for low-level checkpoint evaluation
 - a local and GitHub Pages-friendly viewer for report inspection
 - minimal training and data scaffolding for open-data experiments
 
@@ -33,6 +34,7 @@ Still in progress:
 - full end-to-end MEM reproduction
 - released checkpoints
 - fully implemented high-level adapter inside low-level RMBench evaluation
+- trained low-level checkpoints for RoboTwin evaluation
 - benchmark summary tables and stronger quantitative reporting
 - deeper automated testing beyond smoke checks
 
@@ -66,6 +68,25 @@ For evaluation-related dependencies:
 python3 -m pip install -e ".[eval]"
 ```
 
+For the local development and RoboTwin integration checks:
+
+```bash
+python3 -m pip install -e ".[eval,dev]"
+python3 -m pytest tests/test_robotwin_adapter.py tests/test_rmbench_adapter.py
+```
+
+To install the RoboTwin policy wrapper into a local RoboTwin checkout:
+
+```bash
+python3 scripts/install_robotwin_policy_wrapper.py --robotwin-root benchmarks/RoboTwin
+python3 scripts/check_robotwin_integration.py --robotwin-root benchmarks/RoboTwin
+```
+
+The committed wrapper source lives under
+[`integrations/robotwin/open_pi_mem_robotwin`](integrations/robotwin/open_pi_mem_robotwin);
+`benchmarks/` remains local and is ignored because it contains external
+repositories, simulator assets, and rollout output.
+
 To build and preview the static viewer locally:
 
 ```bash
@@ -97,6 +118,7 @@ The GitHub Pages deployment publishes a curated subset of demos for size and rel
 ## Documentation
 
 - [Getting Started](docs/getting_started.md)
+- [RoboTwin Integration](docs/robotwin_integration.md)
 - [Data Formats And Results](docs/data_formats.md)
 - [Design Notes](docs/design.md)
 - [Contributing](CONTRIBUTING.md)
@@ -114,6 +136,7 @@ open-pi-mem/
 ├── data/                    # Saved reports, annotations, and local raw assets
 ├── docs/                    # Usage, design notes, and data format docs
 ├── examples/                # Sample JSONL data and toy frames
+├── integrations/            # Small adapters copied into external benchmark checkouts
 ├── prompts/                 # Prompt templates for data generation
 ├── scripts/                 # Main entrypoints for training, inference, evaluation, and viewer
 ├── src/open_pi_mem/         # Library code

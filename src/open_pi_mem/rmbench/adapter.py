@@ -127,10 +127,10 @@ class RMBenchAdapter:
 
         # Process video frames
         image_inputs = self.image_processor(images=frames, return_tensors="pt")
-        pixel_values = image_inputs["pixel_values"]  # (T, C, H, W)
+        pixel_values = image_inputs["pixel_values"].unsqueeze(0)  # (1, T, C, H, W)
 
         # Prepare proprioception (current state, broadcast to sequence length)
-        T = pixel_values.shape[0]
+        T = pixel_values.shape[1]
         proprio = torch.tensor(
             [proprio_state] * T, dtype=torch.float32
         ).unsqueeze(0)  # (1, T, action_dim)

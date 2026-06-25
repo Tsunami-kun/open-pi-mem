@@ -87,6 +87,55 @@ To switch models:
 --model gemini-robotics-er-1.5-preview
 ```
 
+## Run RoboTwin Evaluation With open-pi-mem
+
+Install the local package with evaluation and test dependencies:
+
+```bash
+python3 -m pip install -e ".[eval,dev]"
+```
+
+After installing RoboTwin's simulator dependencies and assets under
+`benchmarks/RoboTwin`, install the policy wrapper into that checkout:
+
+```bash
+python3 scripts/install_robotwin_policy_wrapper.py --robotwin-root benchmarks/RoboTwin
+python3 scripts/check_robotwin_integration.py --robotwin-root benchmarks/RoboTwin
+```
+
+Then run:
+
+```bash
+cd benchmarks/RoboTwin/policy/open_pi_mem_robotwin
+bash eval.sh <task_name> <task_config> <checkpoint_path> <seed> <gpu_id>
+```
+
+Example:
+
+```bash
+bash eval.sh place_can_basket demo_randomized /path/to/open_pi_mem_low_level.pt 0 0
+```
+
+More details:
+
+- [RoboTwin Integration](robotwin_integration.md)
+
+To verify the local wrapper without launching the simulator:
+
+```bash
+python3 scripts/check_robotwin_integration.py --robotwin-root benchmarks/RoboTwin
+```
+
+For simulator checks, use the RoboTwin Python 3.10 environment:
+
+```bash
+conda activate open-pi-mem-robotwin
+python scripts/check_robotwin_integration.py --robotwin-root benchmarks/RoboTwin
+```
+
+`evaluation ready: True` requires both simulator dependencies and the RoboTwin
+asset archives to be installed.
+
 ## Launch The Viewer Locally
 
 ```bash
