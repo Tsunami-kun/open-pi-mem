@@ -20,8 +20,20 @@ build/
 dist/
 *.egg-info/
 open_pi_mem_cache/
+planner_policy/
 outputs/
+runs/
+wandb/
 checkpoints/
+eval_result/
+processed_data/
+lerobot_data/
+lerobot_datasets/
+robotwin_data/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
 # Raw local source assets stay untracked. Viewer-ready reports under data/eval_results/ are intentionally versioned.
 data/rmbench_local/
 

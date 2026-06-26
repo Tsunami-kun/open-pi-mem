@@ -61,6 +61,15 @@ This copies `integrations/robotwin/open_pi_mem_robotwin` into
 `benchmarks/RoboTwin/policy/open_pi_mem_robotwin`. The benchmark checkout stays
 ignored by Git because it is external code plus large local assets.
 
+To also install the pi05+MEM policy variant:
+
+```bash
+python3 scripts/install_robotwin_policy_wrapper.py --robotwin-root benchmarks/RoboTwin --wrapper all
+```
+
+See [RoboTwin pi05/pi06 Architecture](robotwin_pi06_architecture.md) for the
+recommended OpenPI/pi05 client-server runtime.
+
 ## Check Integration
 
 From the `open-pi-mem` repository root:

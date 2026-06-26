@@ -38,6 +38,21 @@ Still in progress:
 - benchmark summary tables and stronger quantitative reporting
 - deeper automated testing beyond smoke checks
 
+## OpenPI / RoboTwin Boundary
+
+`open-pi-mem` should not reimplement pi05. RoboTwin pi06 is intended to be:
+
+```text
+pi06 = official OpenPI/RoboTwin pi05 low-level policy + open-pi-mem MEM wrapper
+```
+
+The low-level VLA model, 14D qpos action chunks, camera/state encoding,
+LeRobot conversion, checkpoint layout, normalization assets, training loop, and
+remote inference runtime should come from Physical Intelligence OpenPI and the
+RoboTwin pi05 policy. This repository owns the memory-planning interface,
+subtask/memory traces, integration wrappers, and pi05/pi06 comparison tooling.
+See [`docs/robotwin_pi06_architecture.md`](docs/robotwin_pi06_architecture.md).
+
 ## Pipeline Overview
 
 ```mermaid
@@ -119,6 +134,8 @@ The GitHub Pages deployment publishes a curated subset of demos for size and rel
 
 - [Getting Started](docs/getting_started.md)
 - [RoboTwin Integration](docs/robotwin_integration.md)
+- [RoboTwin pi05/pi06 Architecture](docs/robotwin_pi06_architecture.md)
+- [RoboTwin Self-Evolving MEM Agent](docs/robotwin_self_evolving_agent.md)
 - [Data Formats And Results](docs/data_formats.md)
 - [Design Notes](docs/design.md)
 - [Contributing](CONTRIBUTING.md)
