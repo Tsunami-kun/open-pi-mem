@@ -209,13 +209,22 @@ checkpoints (`model.safetensors` plus `assets/`).
 If the Hugging Face transfer path is slow, retry with one of:
 
 ```bash
---hf-transfer
+--xet-high-performance
 --disable-xet
 --max-workers 1
 ```
 
 These only change the download transport; they do not change the checkpoint
 layout.
+
+For networks where Hugging Face itself is the bottleneck, try a mirror endpoint:
+
+```bash
+--endpoint https://hf-mirror.com
+```
+
+`--hf-transfer` is also exposed for older `huggingface_hub` versions, but recent
+Hub releases use Xet and prefer `--xet-high-performance`.
 
 ## Current Local Blockers
 

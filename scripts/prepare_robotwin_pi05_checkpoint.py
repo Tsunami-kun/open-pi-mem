@@ -221,6 +221,23 @@ def _download_snapshot(
     )
 
 
+def configure_transfer_environment(
+    *,
+    endpoint: str | None = None,
+    hf_transfer: bool = False,
+    disable_xet: bool = False,
+    xet_high_performance: bool = False,
+) -> None:
+    if endpoint:
+        os.environ["HF_ENDPOINT"] = endpoint
+    if hf_transfer:
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+    if disable_xet:
+        os.environ["HF_HUB_DISABLE_XET"] = "1"
+    if xet_high_performance:
+        os.environ["HF_XET_HIGH_PERFORMANCE"] = "1"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--robotwin-root", default="benchmarks/RoboTwin")
@@ -232,17 +249,21 @@ def main() -> None:
     parser.add_argument("--checkpoint-id", default="auto")
     parser.add_argument("--include-optimizer", action="store_true")
     parser.add_argument("--link-mode", choices=["symlink", "copy"], default="symlink")
+    parser.add_argument("--endpoint")
     parser.add_argument("--hf-transfer", action="store_true")
     parser.add_argument("--disable-xet", action="store_true")
+    parser.add_argument("--xet-high-performance", action="store_true")
     parser.add_argument("--max-workers", type=int, default=8)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    if args.hf_transfer:
-        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
-    if args.disable_xet:
-        os.environ["HF_HUB_DISABLE_XET"] = "1"
+    configure_transfer_environment(
+        endpoint=args.endpoint,
+        hf_transfer=args.hf_transfer,
+        disable_xet=args.disable_xet,
+        xet_high_performance=args.xet_high_performance,
+    )
 
     robotwin_root = Path(args.robotwin_root).resolve()
     hf_files = list(_load_hf_files(args.repo_id, args.revision))

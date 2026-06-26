@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from scripts.run_robotwin_pi05_pi06_compare import (
@@ -11,6 +12,7 @@ from scripts.run_robotwin_pi05_pi06_compare import (
 from scripts.prepare_robotwin_pi05_checkpoint import (
     HfFile,
     build_plan,
+    configure_transfer_environment,
     infer_source_subdir,
     selected_checkpoint_files,
     target_relative_path,
@@ -164,3 +166,19 @@ def test_prepare_pi05_checkpoint_plan_can_include_jax_params() -> None:
         "params/_METADATA",
         "params/manifest.ocdbt",
     ]
+
+
+def test_prepare_pi05_checkpoint_transfer_environment(monkeypatch) -> None:
+    monkeypatch.delenv("HF_ENDPOINT", raising=False)
+    monkeypatch.delenv("HF_HUB_DISABLE_XET", raising=False)
+    monkeypatch.delenv("HF_XET_HIGH_PERFORMANCE", raising=False)
+
+    configure_transfer_environment(
+        endpoint="https://hf-mirror.com",
+        disable_xet=True,
+        xet_high_performance=True,
+    )
+
+    assert os.environ["HF_ENDPOINT"] == "https://hf-mirror.com"
+    assert os.environ["HF_HUB_DISABLE_XET"] == "1"
+    assert os.environ["HF_XET_HIGH_PERFORMANCE"] == "1"
