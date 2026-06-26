@@ -53,6 +53,10 @@ RoboTwin pi05 policy. This repository owns the memory-planning interface,
 subtask/memory traces, integration wrappers, and pi05/pi06 comparison tooling.
 See [`docs/robotwin_pi06_architecture.md`](docs/robotwin_pi06_architecture.md).
 
+For public OpenPI-style RoboTwin checkpoints, use
+[`scripts/prepare_robotwin_pi05_checkpoint.py`](scripts/prepare_robotwin_pi05_checkpoint.py)
+to install only inference files into RoboTwin's expected pi05 checkpoint layout.
+
 ## Pipeline Overview
 
 ```mermaid

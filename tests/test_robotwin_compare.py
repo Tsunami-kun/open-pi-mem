@@ -8,6 +8,13 @@ from scripts.run_robotwin_pi05_pi06_compare import (
     parse_result_file,
     required_pi05_artifacts,
 )
+from scripts.prepare_robotwin_pi05_checkpoint import (
+    HfFile,
+    build_plan,
+    infer_source_subdir,
+    selected_checkpoint_files,
+    target_relative_path,
+)
 
 
 def test_parse_result_file_reads_first_success_rate(tmp_path: Path) -> None:
@@ -104,3 +111,56 @@ def test_required_pi05_artifacts_accepts_assets_and_params(tmp_path: Path) -> No
     )
 
     assert missing == []
+
+
+def test_prepare_pi05_checkpoint_plan_selects_inference_files_only() -> None:
+    files = [
+        HfFile("35000/assets/demo/norm_stats.json", 10),
+        HfFile("35000/model.safetensors", 100),
+        HfFile("35000/metadata.pt", 20),
+        HfFile("35000/optimizer.pt", 1000),
+        HfFile("README.md", 1),
+    ]
+
+    plan = build_plan(
+        repo_id="org/model",
+        paths=files,
+        train_config_name="pi05_base_aloha_lora",
+        model_name="demo_model",
+        checkpoint_id="auto",
+        source_subdir=None,
+        include_optimizer=False,
+    )
+
+    assert infer_source_subdir([file.path for file in files]) == "35000"
+    assert plan.checkpoint_id == 35000
+    assert [file.path for file in plan.files] == [
+        "35000/assets/demo/norm_stats.json",
+        "35000/model.safetensors",
+        "35000/metadata.pt",
+    ]
+    assert target_relative_path(
+        "35000/assets/demo/norm_stats.json",
+        "35000",
+    ) == Path("assets/demo/norm_stats.json")
+
+
+def test_prepare_pi05_checkpoint_plan_can_include_jax_params() -> None:
+    files = [
+        HfFile("assets/demo/norm_stats.json", 10),
+        HfFile("params/_METADATA", 100),
+        HfFile("params/manifest.ocdbt", 100),
+        HfFile("train_state/_METADATA", 1000),
+    ]
+
+    selected = selected_checkpoint_files(
+        files,
+        source_subdir="",
+        include_optimizer=False,
+    )
+
+    assert [file.path for file in selected] == [
+        "assets/demo/norm_stats.json",
+        "params/_METADATA",
+        "params/manifest.ocdbt",
+    ]

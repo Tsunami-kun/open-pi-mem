@@ -49,6 +49,23 @@ Use separate runtimes:
 This split is intentional. Official OpenPI has a heavier JAX stack and should
 not be forced into the simulator process.
 
+From the local RoboTwin pi05 checkout, create or verify the OpenPI runtime with:
+
+```bash
+cd benchmarks/RoboTwin/policy/pi05
+uv run --python 3.11 python -c \
+  "import jax, torch, openpi; print(jax.__version__, torch.cuda.is_available())"
+```
+
+For server-side pi06 imports from the RoboTwin root:
+
+```bash
+cd benchmarks/RoboTwin
+PYTHONPATH=/path/to/open-pi-mem/src:./policy:./description/utils:./policy/pi05/src:./policy/pi05/packages/openpi-client/src \
+  policy/pi05/.venv/bin/python -c \
+  "import open_pi_mem_pi06; print(callable(open_pi_mem_pi06.get_model))"
+```
+
 ## Policies
 
 `pi05` baseline:
@@ -148,7 +165,7 @@ python script/eval_policy_client.py \
 
 ## Success-Rate Compare
 
-Once pi05 checkpoint assets exist, run:
+Once pi05 checkpoint assets and weights exist, run:
 
 ```bash
 python scripts/run_robotwin_pi05_pi06_compare.py \
@@ -164,6 +181,41 @@ python scripts/run_robotwin_pi05_pi06_compare.py \
 The script checks for the expected pi05 checkpoint assets and model weights
 before launching RoboTwin. If they are missing, it exits before the simulator
 run.
+
+## Preparing A Public Checkpoint
+
+If a public Hugging Face model already uses the OpenPI checkpoint layout, prepare
+it for RoboTwin with:
+
+```bash
+python scripts/prepare_robotwin_pi05_checkpoint.py \
+  --robotwin-root benchmarks/RoboTwin \
+  --repo-id Crelf/C3I_pi05_Robotwin_50tasks_model_democlean \
+  --model-name C3I_pi05_Robotwin_50tasks_model_democlean \
+  --checkpoint-id auto \
+  --dry-run
+```
+
+Remove `--dry-run` to download only inference files and symlink them into:
+
+```text
+benchmarks/RoboTwin/policy/pi05/checkpoints/<train_config>/<model>/<step>
+```
+
+The downloader skips optimizer and train-state files by default. It supports
+both OpenPI JAX checkpoints (`params/` plus `assets/`) and single-file PyTorch
+checkpoints (`model.safetensors` plus `assets/`).
+
+If the Hugging Face transfer path is slow, retry with one of:
+
+```bash
+--hf-transfer
+--disable-xet
+--max-workers 1
+```
+
+These only change the download transport; they do not change the checkpoint
+layout.
 
 ## Current Local Blockers
 
