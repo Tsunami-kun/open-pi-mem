@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 
-DEFAULT_WRAPPERS = ("open_pi_mem_robotwin", "open_pi_mem_pi06")
+DEFAULT_WRAPPERS = ("open_pi_mem_robotwin", "open_pi_mem_pi05", "open_pi_mem_pi06")
 
 
 def install_policy_wrapper(

@@ -102,6 +102,7 @@ python scripts/install_robotwin_policy_wrapper.py \
 This installs:
 
 - `policy/open_pi_mem_robotwin`
+- `policy/open_pi_mem_pi05`
 - `policy/open_pi_mem_pi06`
 
 ## Direct In-Process Mode
@@ -124,44 +125,50 @@ Recommended production shape:
 1. Start a model server in the OpenPI/pi05 runtime.
 2. Run RoboTwin simulator evaluation in the simulator runtime.
 3. The simulator calls `open_pi_mem_pi06.eval(...)`.
-4. `pi06` calls the remote server method `act_request`.
+4. `pi06` calls the remote OpenPI-compatible websocket policy.
 
-The server model should be `open_pi_mem_pi06`, not raw pi05, so MEM planning
-and pi05 inference run together in the OpenPI runtime.
+The server can run either `pi05` for the baseline or `pi06` for the MEM-wrapped
+baseline. For `pi06`, MEM planning and pi05 inference run together in the
+OpenPI runtime.
 
-Server command shape:
+Server command shape for pi05:
+
+```bash
+PYTHONPATH=/path/to/open-pi-mem/src \
+benchmarks/RoboTwin/policy/pi05/.venv/bin/python scripts/serve_robotwin_pi05_policy.py \
+  --robotwin-root benchmarks/RoboTwin \
+  --mode pi05 \
+  --train-config-name pi05_base_aloha_lora \
+  --model-name <model_name> \
+  --checkpoint-id <step> \
+  --pi0-step 50 \
+  --port 8105
+```
+
+Use `--mode pi06` and a different port for the MEM-wrapped baseline.
+
+Client evaluation command shape for pi05:
 
 ```bash
 cd benchmarks/RoboTwin
-python script/policy_model_server.py \
-  --port 9999 \
-  --config policy/open_pi_mem_pi06/deploy_policy.yml \
+conda run -n open-pi-mem-robotwin python script/eval_policy.py \
+  --config policy/open_pi_mem_pi05/deploy_policy.yml \
   --overrides \
   --task_name place_can_basket \
   --task_config demo_clean \
   --train_config_name pi05_base_aloha_lora \
   --model_name <model_name> \
+  --checkpoint_id <step> \
   --ckpt_setting <model_name> \
   --seed 0 \
-  --policy_name open_pi_mem_pi06
+  --policy_name open_pi_mem_pi05 \
+  --policy_host 127.0.0.1 \
+  --policy_port 8105 \
+  --eval_video_log False
 ```
 
-Client evaluation command shape:
-
-```bash
-cd benchmarks/RoboTwin
-python script/eval_policy_client.py \
-  --port 9999 \
-  --config policy/open_pi_mem_pi06/deploy_policy.yml \
-  --overrides \
-  --task_name place_can_basket \
-  --task_config demo_clean \
-  --train_config_name pi05_base_aloha_lora \
-  --model_name <model_name> \
-  --ckpt_setting <model_name> \
-  --seed 0 \
-  --policy_name open_pi_mem_pi06
-```
+Use `policy/open_pi_mem_pi06/deploy_policy.yml`, `--policy_name open_pi_mem_pi06`,
+and the pi06 server port for the MEM-wrapped run.
 
 ## Success-Rate Compare
 
@@ -228,13 +235,19 @@ Hub releases use Xet and prefer `--xet-high-performance`.
 
 ## Current Local Blockers
 
-The local workspace currently has RoboTwin simulator assets and dependencies,
-but it does not include:
+The local workspace has RoboTwin simulator assets, Curobo installed, the pi05
+OpenPI runtime patched for local use, and the public
+`Crelf/C3I_pi05_Robotwin_50tasks_model_democlean` checkpoint installed at step
+`35000`.
 
-- OpenPI/JAX runtime dependencies in `open-pi-mem-robotwin`
-- pi05 checkpoints under `benchmarks/RoboTwin/policy/pi05/checkpoints`
-- local RoboTwin demonstration data under `benchmarks/RoboTwin/data`
+What is still blocked locally is benchmark throughput:
 
-Therefore this workspace can verify wrapper import, command construction, and
-simulator readiness, but cannot produce real pi05/pi06 success rates until a
-trained pi05 checkpoint is available.
+- pi05 GPU loading OOMs on the 8 GB RTX 5060 Laptop GPU once desktop and
+  RoboTwin rendering memory are considered;
+- the installed pi05 PyTorch build warns that `sm_120` is unsupported;
+- CPU fallback loads the checkpoint and reaches real pi05 action sampling, but
+  a one-action RoboTwin smoke timed out after 900 seconds while the server was
+  still CPU-bound.
+
+Real pi05/pi06 success-rate numbers should be collected on a larger GPU or with
+the OpenPI policy server on a separate GPU machine.

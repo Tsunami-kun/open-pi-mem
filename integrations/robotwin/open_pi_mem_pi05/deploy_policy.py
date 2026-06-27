@@ -4,10 +4,7 @@ import importlib.util
 from pathlib import Path
 from typing import Any
 
-from open_pi_mem.robotwin.mem_controller import (
-    PassthroughMEMPlanner,
-    Pi05MEMController,
-)
+from open_pi_mem.robotwin.mem_controller import encode_pi05_observation
 from open_pi_mem.robotwin.remote_policy import (
     RobotwinRemotePolicyClient,
     extract_actions,
@@ -26,32 +23,11 @@ def _optional_int(value: Any) -> int | None:
     return int(value)
 
 
-def _planner_kwargs(usr_args: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "planner_mode": str(usr_args.get("mem_planner_mode", "passthrough")),
-        "plan_interval_steps": _optional_int(
-            usr_args.get("mem_plan_interval_steps", 1)
-        )
-        or 1,
-        "action_steps": _optional_int(usr_args.get("pi0_step")),
-    }
-
-
 def _remote_policy_args(usr_args: dict[str, Any]) -> tuple[str, int] | None:
     host = usr_args.get("policy_host")
     if _is_null(host):
         return None
     return str(host), _optional_int(usr_args.get("policy_port")) or 8000
-
-
-def _build_planner(mode: str):
-    if mode != "passthrough":
-        raise ValueError(
-            "open_pi_mem_pi06 currently supports mem_planner_mode=passthrough. "
-            "Use this as the pi05-equivalent baseline before enabling a trained "
-            "MEM planner."
-        )
-    return PassthroughMEMPlanner()
 
 
 def _load_pi05_class(robotwin_root: str | Path = "."):
@@ -69,51 +45,48 @@ def _load_pi05_class(robotwin_root: str | Path = "."):
     return module.PI0
 
 
-def get_model(usr_args: dict[str, Any]) -> Pi05MEMController:
+def get_model(usr_args: dict[str, Any]):
     remote_args = _remote_policy_args(usr_args)
     if remote_args is not None:
         return RobotwinRemotePolicyClient(*remote_args)
 
     pi05_class = _load_pi05_class(Path.cwd())
-    pi05_policy = pi05_class(
+    return pi05_class(
         usr_args["train_config_name"],
         usr_args["model_name"],
         usr_args.get("checkpoint_id", 30000),
         usr_args["pi0_step"],
     )
-    planner_args = _planner_kwargs(usr_args)
-    return Pi05MEMController(
-        pi05_policy,
-        planner=_build_planner(planner_args["planner_mode"]),
-        plan_interval_steps=planner_args["plan_interval_steps"],
-        action_steps=planner_args["action_steps"],
-    )
 
 
-def reset_model(model: Pi05MEMController) -> None:
+def reset_model(model) -> None:
     reset = getattr(model, "reset", None)
     if callable(reset):
         reset()
         return
-    if hasattr(model, "call"):
-        model.call(func_name="reset_model")
-        return
-    model.reset()
+    model.reset_obsrvationwindows()
 
 
-def eval(TASK_ENV, model: Pi05MEMController, observation: dict):
-    instruction = TASK_ENV.get_instruction()
+def eval(TASK_ENV, model, observation: dict):
     if hasattr(model, "infer"):
-        response = model.infer({"goal": instruction, "observation": observation})
-        actions = extract_actions(response)
-    elif hasattr(model, "call"):
-        actions = model.call(
-            func_name="act_request",
-            obs={"goal": instruction, "observation": observation},
+        response = model.infer(
+            {
+                "goal": TASK_ENV.get_instruction(),
+                "observation": observation,
+            }
         )
+        actions = extract_actions(response)
     else:
-        actions = model.act(instruction, observation)
+        if model.observation_window is None:
+            model.set_language(TASK_ENV.get_instruction())
+        input_rgb_arr, input_state = encode_pi05_observation(observation)
+        model.update_observation_window(input_rgb_arr, input_state)
+        actions = model.get_action()[: model.pi0_step]
+
     for action in actions:
         TASK_ENV.take_action(action)
         observation = TASK_ENV.get_obs()
+        if not hasattr(model, "infer"):
+            input_rgb_arr, input_state = encode_pi05_observation(observation)
+            model.update_observation_window(input_rgb_arr, input_state)
     return observation

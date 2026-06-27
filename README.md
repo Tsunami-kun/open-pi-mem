@@ -32,9 +32,8 @@ Completed:
 Still in progress:
 
 - full end-to-end MEM reproduction
-- released checkpoints
 - fully implemented high-level adapter inside low-level RMBench evaluation
-- trained low-level checkpoints for RoboTwin evaluation
+- repository-owned trained low-level checkpoints for RoboTwin evaluation
 - benchmark summary tables and stronger quantitative reporting
 - deeper automated testing beyond smoke checks
 
@@ -105,6 +104,32 @@ The committed wrapper source lives under
 [`integrations/robotwin/open_pi_mem_robotwin`](integrations/robotwin/open_pi_mem_robotwin);
 `benchmarks/` remains local and is ignored because it contains external
 repositories, simulator assets, and rollout output.
+
+For pi05/pi06 RoboTwin evaluation, install all wrappers and start the OpenPI
+model in the pi05 runtime:
+
+```bash
+python3 scripts/install_robotwin_policy_wrapper.py --robotwin-root benchmarks/RoboTwin --wrapper all
+
+PYTHONPATH=$PWD/src \
+CUDA_VISIBLE_DEVICES= \
+OPENPI_PYTORCH_DEVICE=cpu \
+TORCH_COMPILE_DISABLE=1 \
+TORCHDYNAMO_DISABLE=1 \
+benchmarks/RoboTwin/policy/pi05/.venv/bin/python scripts/serve_robotwin_pi05_policy.py \
+  --robotwin-root benchmarks/RoboTwin \
+  --mode pi05 \
+  --train-config-name pi05_base_aloha_lora \
+  --model-name C3I_pi05_Robotwin_50tasks_model_democlean \
+  --checkpoint-id 35000 \
+  --pi0-step 50 \
+  --port 8105
+```
+
+Then run RoboTwin from its simulator environment with
+`--policy_host 127.0.0.1 --policy_port 8105`. CPU mode is only a fallback for
+smoke/debug runs; real success-rate benchmarks need a GPU that can hold both
+the RoboTwin renderer and pi05/OpenPI model, or a separate remote policy GPU.
 
 To build and preview the static viewer locally:
 

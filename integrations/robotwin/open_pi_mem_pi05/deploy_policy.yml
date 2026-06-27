@@ -1,5 +1,5 @@
 # Basic RoboTwin experiment configuration
-policy_name: open_pi_mem_pi06
+policy_name: open_pi_mem_pi05
 task_name: null
 task_config: null
 ckpt_setting: null
@@ -12,10 +12,6 @@ model_name: null
 checkpoint_id: 30000
 pi0_step: 50
 
-# open-pi-mem MEM planner arguments
-mem_planner_mode: passthrough
-mem_plan_interval_steps: 1
-
 # Remote OpenPI runtime. Set policy_host to use the Python 3.11 policy server.
 policy_host: null
-policy_port: 8001
+policy_port: 8000

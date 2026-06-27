@@ -6,9 +6,7 @@ if [ "$#" -ne 8 ]; then
     exit 2
 fi
 
-export XLA_PYTHON_CLIENT_MEM_FRACTION=${XLA_PYTHON_CLIENT_MEM_FRACTION:-0.4}
-
-policy_name=open_pi_mem_pi06
+policy_name=open_pi_mem_pi05
 task_name=${1}
 task_config=${2}
 train_config_name=${3}

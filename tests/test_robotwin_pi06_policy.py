@@ -4,6 +4,8 @@ import importlib
 import sys
 from pathlib import Path
 
+import numpy as np
+
 
 def test_pi06_policy_module_exports_robo_twin_hooks() -> None:
     policy_root = Path("integrations/robotwin").resolve()
@@ -114,3 +116,69 @@ def test_pi06_eval_uses_remote_model_client_when_available() -> None:
         }
     ]
     assert env.actions == [[0.1] * 14, [0.2] * 14]
+
+
+def test_pi06_eval_uses_openpi_websocket_client_when_available() -> None:
+    policy_root = Path("integrations/robotwin").resolve()
+    sys.path.insert(0, str(policy_root))
+    try:
+        deploy_policy = importlib.import_module("open_pi_mem_pi06.deploy_policy")
+    finally:
+        sys.path.remove(str(policy_root))
+
+    class FakeTaskEnv:
+        def __init__(self) -> None:
+            self.actions = []
+
+        def get_instruction(self) -> str:
+            return "remote goal"
+
+        def take_action(self, action) -> None:
+            self.actions.append(action)
+
+        def get_obs(self) -> dict:
+            return {"next": len(self.actions)}
+
+    class FakeOpenPIClient:
+        def __init__(self) -> None:
+            self.requests = []
+
+        def infer(self, request):
+            self.requests.append(request)
+            return {"actions": [[0.3] * 14, [0.4] * 14]}
+
+    env = FakeTaskEnv()
+    client = FakeOpenPIClient()
+
+    result = deploy_policy.eval(env, client, {"observation": "value"})
+
+    assert result == {"next": 2}
+    assert client.requests == [
+        {
+            "goal": "remote goal",
+            "observation": {"observation": "value"},
+        }
+    ]
+    np.testing.assert_allclose(env.actions, [[0.3] * 14, [0.4] * 14])
+
+
+def test_pi06_reset_model_uses_openpi_websocket_reset_when_available() -> None:
+    policy_root = Path("integrations/robotwin").resolve()
+    sys.path.insert(0, str(policy_root))
+    try:
+        deploy_policy = importlib.import_module("open_pi_mem_pi06.deploy_policy")
+    finally:
+        sys.path.remove(str(policy_root))
+
+    class FakeOpenPIClient:
+        def __init__(self) -> None:
+            self.reset_count = 0
+
+        def reset(self) -> None:
+            self.reset_count += 1
+
+    client = FakeOpenPIClient()
+
+    deploy_policy.reset_model(client)
+
+    assert client.reset_count == 1
